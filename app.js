@@ -96,14 +96,53 @@ grid.addEventListener("keydown", event => {
   }
 });
 function closeGame() {
+  leaveFallbackFullscreen();
+  if (document.fullscreenElement) document.exitFullscreen?.();
   if (dialog.open) dialog.close();
   gameFrame.src = "about:blank";
 }
 document.getElementById("closeDialog")?.addEventListener("click", closeGame);
 dialog.addEventListener("click", event => { if (event.target === dialog) closeGame(); });
 dialog.addEventListener("close", () => { gameFrame.src = "about:blank"; });
-document.getElementById("fullscreenBtn")?.addEventListener("click", () => {
-  if (gameFrame.requestFullscreen) gameFrame.requestFullscreen();
+const fullscreenBtn = document.getElementById("fullscreenBtn");
+function leaveFallbackFullscreen() {
+  dialog.classList.remove("is-fullscreen");
+  fullscreenBtn.textContent = "Fullscreen ↗";
+  document.body.classList.remove("player-fullscreen-open");
+}
+async function enterGameFullscreen() {
+  try {
+    if (dialog.requestFullscreen) {
+      await dialog.requestFullscreen();
+      return;
+    }
+    if (gameFrame.requestFullscreen) {
+      await gameFrame.requestFullscreen();
+      return;
+    }
+  } catch (error) {
+    // Use the in-page full-window fallback when native fullscreen is blocked.
+  }
+  dialog.classList.add("is-fullscreen");
+  document.body.classList.add("player-fullscreen-open");
+  fullscreenBtn.textContent = "Exit fullscreen";
+}
+fullscreenBtn?.addEventListener("click", async () => {
+  if (dialog.classList.contains("is-fullscreen")) {
+    leaveFallbackFullscreen();
+    return;
+  }
+  if (document.fullscreenElement) {
+    await document.exitFullscreen?.();
+    return;
+  }
+  await enterGameFullscreen();
+});
+document.addEventListener("fullscreenchange", () => {
+  fullscreenBtn.textContent = document.fullscreenElement ? "Exit fullscreen" : "Fullscreen ↗";
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && dialog.classList.contains("is-fullscreen")) leaveFallbackFullscreen();
 });
 document.getElementById("menuBtn")?.addEventListener("click", () => {
   const nav = document.querySelector("nav");
