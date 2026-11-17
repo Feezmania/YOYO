@@ -38,10 +38,18 @@ const dialogTitle = document.getElementById("dialogTitle");
 const gameFrame = document.getElementById("gameFrame");
 let activeFilter = "All";
 
+function gameScreenshotUrl(game) {
+  const gameUrl = new URL("./games/" + game.id + "/index.html", window.location.href).href;
+  return "https://s.wordpress.com/mshots/v1/" + encodeURIComponent(gameUrl) + "?w=640&h=360";
+}
 function renderCards() {
   grid.innerHTML = GAME_DATA.map(game => `
     <article class="game-card" data-name="${game.name}" data-category="${game.category}" data-game-id="${game.id}" tabindex="0" role="button" aria-label="Play ${game.name}">
-      <div class="game-thumb ${game.thumb}"><span class="thumb-icon">${game.icon}</span><span class="thumb-tag">${game.category.toUpperCase()}</span></div>
+      <div class="game-thumb ${game.thumb}">
+        <span class="thumb-icon">${game.icon}</span>
+        <img class="game-shot" src="${gameScreenshotUrl(game)}" alt="${game.name} gameplay screenshot" loading="lazy" referrerpolicy="no-referrer" onload="this.parentElement.classList.add('has-shot')" onerror="this.remove()">
+        <span class="thumb-tag">${game.category.toUpperCase()}</span>
+      </div>
       <div class="game-info"><div><h3>${game.name}</h3><p>${game.description}</p></div><button class="play-btn" type="button" aria-label="Play ${game.name}">▶</button></div>
     </article>`).join("");
 }
