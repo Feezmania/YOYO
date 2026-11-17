@@ -110,36 +110,16 @@ function leaveFallbackFullscreen() {
   fullscreenBtn.textContent = "Fullscreen ↗";
   document.body.classList.remove("player-fullscreen-open");
 }
-async function enterGameFullscreen() {
-  try {
-    if (dialog.requestFullscreen) {
-      await dialog.requestFullscreen();
-      return;
-    }
-    if (gameFrame.requestFullscreen) {
-      await gameFrame.requestFullscreen();
-      return;
-    }
-  } catch (error) {
-    // Use the in-page full-window fallback when native fullscreen is blocked.
-  }
-  dialog.classList.add("is-fullscreen");
-  document.body.classList.add("player-fullscreen-open");
-  fullscreenBtn.textContent = "Exit fullscreen";
-}
-fullscreenBtn?.addEventListener("click", async () => {
+fullscreenBtn?.addEventListener("click", () => {
+  // Use the in-page full-window mode directly. Some mobile browsers expose
+  // requestFullscreen but do not actually fullscreen ordinary page elements.
   if (dialog.classList.contains("is-fullscreen")) {
     leaveFallbackFullscreen();
-    return;
+  } else {
+    dialog.classList.add("is-fullscreen");
+    document.body.classList.add("player-fullscreen-open");
+    fullscreenBtn.textContent = "Exit fullscreen";
   }
-  if (document.fullscreenElement) {
-    await document.exitFullscreen?.();
-    return;
-  }
-  await enterGameFullscreen();
-});
-document.addEventListener("fullscreenchange", () => {
-  fullscreenBtn.textContent = document.fullscreenElement ? "Exit fullscreen" : "Fullscreen ↗";
 });
 document.addEventListener("keydown", event => {
   if (event.key === "Escape" && dialog.classList.contains("is-fullscreen")) leaveFallbackFullscreen();
